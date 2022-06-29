@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 # Start importing game libs
 from game.screen import Screen
+from game.db import coreSQL
+from game.stages import Stages
 
 class GameEngine():
     def __init__(self):
@@ -40,15 +42,26 @@ class GameEngine():
             # Now, let's make sure that the game is locked to a framerate.
             self.clock.tick(self.framerate)
 
+            # The last thing we want to do in our loop here is update the screen.
+            pygame.display.update()
+
 if __name__ == "__main__":
     # load the .env
     env_state = load_dotenv()
     if not env_state:
         raise Exception('Failed to load the .env file! Please reload your repo.')
 
+    # Init the DB
+    dbclass = coreSQL()
+    if not coreSQL.checkForDB(dbclass):
+        raise Exception('Failed to find the game database! Please reload your repo.')
+
     # Call to the game
     engine = GameEngine()
-    screen = GameEngine.startGame(engine)
+    screen, screen_res = GameEngine.startGame(engine)
+
+    # Temp!! load a stage
+    Stages.loadStage(1, screen, screen_res)
 
     # Start the loop!
     GameEngine.gameLoop(engine, screen)

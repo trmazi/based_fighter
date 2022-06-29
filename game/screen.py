@@ -40,4 +40,4 @@ class Screen():
 
         # Start the screen
         screen = pygame.display.set_mode((self.window_width, self.window_height), self.pygame_flags, display=self.fs_screen, vsync=self.use_vsync)
-        return screen
+        return (screen, (self.window_width, self.window_height))
