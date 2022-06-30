@@ -11,6 +11,8 @@ from game.db import coreSQL
 # Import scenes
 from game.system import systemTestMenu
 
+from game.stages import Stages
+
 class GameEngine():
     def __init__(self):
         self.run = True
@@ -28,7 +30,7 @@ class GameEngine():
         # - GAMEMODE
         # We will init this with None so that the engine can decide what to do.
 
-        self.current_state = 'TESTMODE'
+        self.current_state = None
         self.current_events = None
 
         # Now, we begin the loop
@@ -52,7 +54,7 @@ class GameEngine():
                 pygame.display.quit()
                 exit()
 
-            elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_F2 and self.current_state != 'TESTMODE':
                     self.current_state = 'TESTMODE'
 
@@ -69,9 +71,14 @@ class GameEngine():
 
             # Now, we just have to do whatever state the event manager is in.
             if self.current_state == None:
+                pygame.display.set_caption('BasedFighter V0.1 (idle)')
+
                 pass
             elif self.current_state == 'TESTMODE':
-                self.current_state = systemTestMenu(self.screen, self.resolution, self.clock, self.framerate)
+                print('Starting test mode...')
+                pygame.display.set_caption('BasedFighter V0.1 (Test Menu)')
+                systemTestMenu(self.screen, self.resolution, self.clock, self.framerate)
+                self.current_state = None
 
 if __name__ == "__main__":
     # load the .env

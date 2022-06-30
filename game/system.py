@@ -8,8 +8,11 @@ class systemTestMenu:
 
     def __init__(self, surface: pygame.surface.Surface, resolution: tuple, clock: pygame.time.Clock, framerate: int) -> None:
         self.testing = True
+        self.current_select = 0
+        self.len_settings = 0
         self.test_state = None # If the test state is None, return the main test menu. Otherwise, render the test menu that we care about.
 
+        self.text_color = (255, 255, 255)
         self.surface = surface
         self.resolution = resolution
         self.clock = clock
@@ -49,6 +52,16 @@ class systemTestMenu:
                 pygame.display.quit()
                 exit()
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F2 and self.testing:
+                    self.current_select = self.current_select+1 if self.current_select+1 < self.len_settings else 0
+                if event.key == pygame.K_DOWN and self.testing:
+                    self.current_select = self.current_select+1 if self.current_select+1 < self.len_settings else 0
+                if event.key == pygame.K_UP and self.testing:
+                    self.current_select = self.current_select-1 if self.current_select-1 >= 0 else self.len_settings-1
+                if event.key == pygame.K_KP_ENTER and self.testing:
+                    self.test_state = self.current_select
+
     def mainTestMenu(self):
         # First off, let's make sure that the screen has been wiped.
         self.surface.fill((0, 0, 0))
@@ -59,10 +72,14 @@ class systemTestMenu:
             'Coin Options',
             'Network Options',
             'Input Options',
-            'All Factory Settings'
+            'All Factory Settings',
+            'Leave Test Mode'
         ]
 
-        while self.test_state == None and self.testing != False:
+        self.len_settings = len(test_options)
+        self.current_select = 0
+
+        while self.testing != False:
             # Tick the clock for good luck!
             self.clock.tick(self.framerate)
 
@@ -75,8 +92,22 @@ class systemTestMenu:
             self.drawTestMenuText('Test Menu', (255, 255, 255), self.surface, self.resolution[0]/2, 40, 50, 1)
 
             buffer = int(100*self.resolution[1]/768)
+            index = 0
             for option in test_options:
-                self.drawTestMenuText(option, (255, 255, 255), self.surface, self.resolution[0]/2, buffer, 25, 1)
-                buffer += int(25*self.resolution[1]/768)
-            
+                if index == self.current_select:
+                    self.text_color = (255, 0, 0)
+                self.drawTestMenuText(option, self.text_color, self.surface, self.resolution[0]/2, buffer, 25, 1)
+                buffer += int(30*self.resolution[1]/768)
+                self.text_color = (255, 255, 255)
+                index +=1
+
+            if self.test_state == 6:
+                # We will now leave test mode.
+                self.test_state = None
+                self.surface.fill((0, 0, 0))
+                print('Now leaving testing mode...')
+                self.testing = False
+
             pygame.display.update()
+
+        return None # Send the game back to an init state.

@@ -35,7 +35,7 @@ class Screen():
             self.use_vsync = 0
 
         # We should init the caption and icon before the screen runs.
-        pygame.display.set_caption('BasedFighter V0.1 (Develop Mode)')
+        pygame.display.set_caption('BasedFighter V0.1 (soon...)')
         pygame.display.set_icon(self.icon)
 
         # Start the screen
