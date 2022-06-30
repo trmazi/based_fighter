@@ -23,7 +23,7 @@ class systemTestMenu:
         if os.path.exists(font_path):
             self.system_font = font_path
         else: raise Exception(f"Can't load the system test menu font! Please check that {font_path} exists!")
-        
+
         pygame.display.set_caption('BasedFighter V0.1 (Test Menu)')
         self.mainTestMenu()
 
@@ -60,8 +60,10 @@ class systemTestMenu:
                     self.current_select = self.current_select+1 if self.current_select+1 < self.len_settings else 0
                 if event.key == pygame.K_UP and self.testing:
                     self.current_select = self.current_select-1 if self.current_select-1 >= 0 else self.len_settings-1
-                if event.key == pygame.K_KP_ENTER and self.testing:
+                if event.key == pygame.K_RETURN and self.testing:
                     self.test_state = self.current_select
+                if event.key == pygame.K_F1 and self.testing:
+                    self.test_state = self.current_select    
 
     def mainTestMenu(self):
         # First off, let's make sure that the screen has been wiped.
