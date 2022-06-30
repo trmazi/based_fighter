@@ -23,7 +23,8 @@ class systemTestMenu:
         if os.path.exists(font_path):
             self.system_font = font_path
         else: raise Exception(f"Can't load the system test menu font! Please check that {font_path} exists!")
-
+        
+        pygame.display.set_caption('BasedFighter V0.1 (Test Menu)')
         self.mainTestMenu()
 
     def drawTestMenuText(self, text: str, color: tuple, surface: pygame.surface.Surface, x: int, y: int, size: int, align: int):

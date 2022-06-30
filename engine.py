@@ -76,7 +76,6 @@ class GameEngine():
                 pass
             elif self.current_state == 'TESTMODE':
                 print('Starting test mode...')
-                pygame.display.set_caption('BasedFighter V0.1 (Test Menu)')
                 systemTestMenu(self.screen, self.resolution, self.clock, self.framerate)
                 self.current_state = None
 
