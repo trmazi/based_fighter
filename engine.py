@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 # Start importing game libs
 from game.screen import Screen
 from game.db import coreSQL
-from game.stages import Stages
+
+# Import scenes
+from game.system import systemTestMenu
 
 class GameEngine():
     def __init__(self):
@@ -15,6 +17,22 @@ class GameEngine():
         self.framerate = 60
         self.clock = pygame.time.Clock()
         self.screenclass = Screen()
+
+        # Let's start up the game.
+        self.screen, self.resolution = self.startGame()
+
+        # Current scene/screen state. Here's a list of them.
+        # - STARTUP
+        # - TESTMODE
+        # - ATTRACT
+        # - GAMEMODE
+        # We will init this with None so that the engine can decide what to do.
+
+        self.current_state = 'TESTMODE'
+        self.current_events = None
+
+        # Now, we begin the loop
+        self.engineLoop()
 
     def startGame(self):
         # Init pygame
@@ -26,24 +44,34 @@ class GameEngine():
     def eventHandler(self):
         '''
         Handles game events.
-        Returns keydowns if needed.
         '''
-        if pygame.event.get(pygame.QUIT):
-            self.run = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.run = False
+                print('thank you for playing!')
+                pygame.display.quit()
+                exit()
 
-    def gameLoop(self, screen):
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F2 and self.current_state != 'TESTMODE':
+                    self.current_state = 'TESTMODE'
+
+    def engineLoop(self):
         '''
-        The main game loop.
+        The main loop of the engine. Everything is started by this loop.
         '''
         while self.run:
             # First, we should start our loop with the event manager
-            events = self.eventHandler()
+            self.eventHandler()
 
             # Now, let's make sure that the game is locked to a framerate.
             self.clock.tick(self.framerate)
 
-            # The last thing we want to do in our loop here is update the screen.
-            pygame.display.update()
+            # Now, we just have to do whatever state the event manager is in.
+            if self.current_state == None:
+                pass
+            elif self.current_state == 'TESTMODE':
+                self.current_state = systemTestMenu(self.screen, self.resolution, self.clock, self.framerate)
 
 if __name__ == "__main__":
     # load the .env
@@ -57,14 +85,7 @@ if __name__ == "__main__":
         raise Exception('Failed to find the game database! Please reload your repo.')
 
     # Call to the game
-    engine = GameEngine()
-    screen, screen_res = GameEngine.startGame(engine)
-
-    # Temp!! load a stage
-    Stages.loadStage(1, screen, screen_res)
-
-    # Start the loop!
-    GameEngine.gameLoop(engine, screen)
+    GameEngine()
 
     # Game is over
     print('thank you for playing!')
