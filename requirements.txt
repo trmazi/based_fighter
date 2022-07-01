@@ -3,4 +3,3 @@ python-dotenv
 screeninfo
 pysqlite3
 typing-extensions
-json
