@@ -11,8 +11,6 @@ from game.db import coreSQL
 # Import scenes
 from game.system import systemTestMenu
 
-from game.stages import Stages
-
 class GameEngine():
     def __init__(self):
         self.run = True
@@ -72,7 +70,6 @@ class GameEngine():
             # Now, we just have to do whatever state the event manager is in.
             if self.current_state == None:
                 pygame.display.set_caption('BasedFighter V0.1 (idle)')
-
                 pass
             elif self.current_state == 'TESTMODE':
                 print('Starting test mode...')

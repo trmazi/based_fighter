@@ -60,3 +60,31 @@ class gameDatabaseAccess():
 
         for stage in result:
             print(stage)
+
+    def loadSetting(self, settingID):
+        '''
+        Given a settingID, return data for it.
+        '''
+        self.cursor.execute(f"SELECT * FROM settings where id={settingID}")
+        result = self.cursor.fetchone()
+
+        if result is None:
+            self.connection.close()
+            return None
+
+        settingID, name, data = result
+        self.connection.close()
+        return ValidatedDict({
+            'id': settingID,
+            'name': name,
+            'data': json.loads(data)
+        })
+
+    def saveSetting(self, setting: ValidatedDict):
+        '''
+        Given a setting, save it.
+        '''
+        self.cursor.execute(f"UPDATE settings SET data='{json.dumps(setting.get('data'))}' where id='{setting.get_int('id')}'")
+
+        self.connection.commit()
+        self.connection.close()

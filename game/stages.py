@@ -6,7 +6,10 @@ class Stages():
     '''
     A class for dealing with stages.
     '''
-    def loadStage(stage_id, surface: pygame.surface.Surface, screen_res: (tuple)):
+    def __init__(self):
+        pass
+
+    def loadStage(self, stage_id, surface: pygame.surface.Surface, screen_res: (tuple)):
         stageclass = gameDatabaseAccess()
         stage = gameDatabaseAccess.loadStage(stageclass, stage_id)
 
@@ -22,3 +25,9 @@ class Stages():
         stage_loaded = pygame.transform.smoothscale(stage_loaded, screen_res)
         surface.blit(stage_loaded, (0, 0))
         pygame.display.update()
+
+    def stageLoop(self, stage_id, player1, player2):
+        '''
+        The in-game loop for the gameplay
+        '''
+        pass

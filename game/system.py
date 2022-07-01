@@ -1,4 +1,7 @@
-import pygame, os
+import pygame, os, time
+
+from game.db import gameDatabaseAccess
+from game.validated import ValidatedDict
 
 class systemTestMenu:
     '''
@@ -11,12 +14,19 @@ class systemTestMenu:
         self.current_select = 0
         self.len_settings = 0
         self.test_state = None # If the test state is None, return the main test menu. Otherwise, render the test menu that we care about.
+        self.current_value = 0
+        self.len_values = 0
+        self.disable_esc = False
+        self.needs_enter = False
+        self.enter_pressed = False
+        self.last_setting = 0
 
         self.text_color = (255, 255, 255)
         self.surface = surface
         self.resolution = resolution
         self.clock = clock
         self.framerate = framerate
+        self.header_text = ''
 
         # Now, we should load the system font path into a var. We'll do a simple check on it to be safe.
         font_path = './assets/fonts/testmenu.ttf'
@@ -42,6 +52,25 @@ class systemTestMenu:
 
         surface.blit(textobj, textrect)
 
+    def drawHeader(self, add_ud: bool, add_sel: bool, add_lr: bool, add_esc: bool):
+        # I keep needing these so i made it a func
+        self.drawTestMenuText(self.header_text, self.text_color, self.surface, self.resolution[0]/2, int(30*self.resolution[1]/768), 50, 1)
+
+        footers = []
+        if add_ud:
+            footers.append('UP/DOWN/F2 to move')
+        if add_lr:
+            footers.append('LEFT/RIGHT to change value')
+        if add_sel:
+            footers.append('ENTER to select')
+        if add_esc:
+            footers.append('ESC to go back')
+
+        buffer = 600
+        for footer in footers:
+            self.drawTestMenuText(footer, self.text_color, self.surface, self.resolution[0]/2, int(buffer*self.resolution[1]/768), 35, 1)
+            buffer += 50
+
     def eventHandler(self):
         '''
         Handles game events.
@@ -60,15 +89,36 @@ class systemTestMenu:
                     self.current_select = self.current_select+1 if self.current_select+1 < self.len_settings else 0
                 if event.key == pygame.K_UP and self.testing:
                     self.current_select = self.current_select-1 if self.current_select-1 >= 0 else self.len_settings-1
+                if event.key == pygame.K_RIGHT and self.testing:
+                    self.current_value = self.current_value+1 if self.current_value+1 < self.len_values else 0
+                if event.key == pygame.K_LEFT and self.testing:
+                    self.current_value = self.current_value-1 if self.current_value-1 >= 0 else self.len_values-1
                 if event.key == pygame.K_RETURN and self.testing:
-                    self.test_state = self.current_select
+                    if not self.needs_enter:
+                        self.last_setting = self.current_select
+                        self.test_state = self.current_select
+                        self.current_select = 0
+                    else:
+                        self.enter_pressed = True
                 if event.key == pygame.K_F1 and self.testing:
-                    self.test_state = self.current_select    
+                    if not self.needs_enter:
+                        self.last_setting = self.current_select
+                        self.test_state = self.current_select
+                        self.current_select = 0
+                    else:
+                        self.enter_pressed = True
+                if event.key == pygame.K_ESCAPE and self.testing:
+                    if not self.disable_esc:
+                        self.needs_enter = False
+                        self.disable_esc = False
+                        self.current_select = self.last_setting
+                        self.current_value = 0
+                        self.test_state = None
 
     def mainTestMenu(self):
         # First off, let's make sure that the screen has been wiped.
         self.surface.fill((0, 0, 0))
-
+        
         test_options = [
             'Input Test',
             'Game Options',
@@ -77,6 +127,49 @@ class systemTestMenu:
             'Input Options',
             'All Factory Settings',
             'Leave Test Mode'
+        ]
+
+        factory_states = [
+            {
+                'id': 1,
+                'name': 'Game Options',
+                'data': [
+                    {'name': 'Difficulty',
+                    'type': 'int',
+                    'values': 1
+                    }
+                ]
+            },
+            {
+                'id': 2,
+                'name': 'Coin Options',
+                'data': [
+                    {'name': 'Difficulty',
+                    'type': 'int',
+                    'values': 1
+                    }
+                ]
+            },
+            {
+                'id': 3,
+                'name': 'Network Options',
+                'data': [
+                    {'name': 'Difficulty',
+                    'type': 'int',
+                    'values': 1
+                    }
+                ]
+            },
+            {
+                'id': 4,
+                'name': 'Input Options',
+                'data': [
+                    {'name': 'Difficulty',
+                    'type': 'int',
+                    'values': 1
+                    }
+                ]
+            },
         ]
 
         self.len_settings = len(test_options)
@@ -91,8 +184,8 @@ class systemTestMenu:
 
             # Because test menu is in default state, load the main test menu.
             self.surface.fill((0, 0, 0))
-
-            self.drawTestMenuText('Test Menu', (255, 255, 255), self.surface, self.resolution[0]/2, 40, 50, 1)
+            self.header_text = "Test Menu"
+            self.drawHeader(True, True, False, False)
 
             buffer = int(100*self.resolution[1]/768)
             index = 0
@@ -108,8 +201,67 @@ class systemTestMenu:
                 # We will now leave test mode.
                 self.test_state = None
                 self.surface.fill((0, 0, 0))
-                print('Now leaving testing mode...')
+                print('Now leaving test mode...')
                 self.testing = False
+
+            elif self.test_state == 0:
+                # IO test shit
+                self.surface.fill((0, 0, 0))
+                self.header_text = 'IO Test Menu'
+                self.drawHeader(False, False, False, True)
+
+            elif self.test_state == 5:
+                # All factory settings type shit
+                self.surface.fill((0, 0, 0))
+                self.header_text = 'All Factory Settings'
+                self.drawHeader(False, True, True, False)
+                self.drawTestMenuText('Are you sure you want to erase all settings?', self.text_color, self.surface, self.resolution[0]/2, int(300*self.resolution[1]/768), 25, 1)
+                values = ['No', 'Yes']
+                self.drawTestMenuText(values[self.current_value], (255, 0, 0), self.surface, self.resolution[0]/1.75, int(360*self.resolution[1]/768), 25, 1)
+                pygame.display.update()
+                self.needs_enter = True
+                self.disable_esc = True
+
+                if self.enter_pressed and self.current_value == -1:
+                    # Restore settings
+                    self.surface.fill((0, 0, 0))
+                    self.header_text = 'Please Wait...'
+                    self.drawHeader(False, False, False, False)
+                    pygame.display.update()
+                    for set in factory_states:
+                        gameDatabaseAccess().saveSetting(ValidatedDict(set))
+                    time.sleep(2)
+                    self.current_value = 0
+                    self.current_select = self.last_setting
+                    self.needs_enter = False
+                    self.enter_pressed = False
+                    self.disable_esc = False
+                    self.test_state = None
+                    
+                elif self.enter_pressed and self.current_value == 0:
+                    self.surface.fill((0, 0, 0))
+                    self.header_text = 'NO MODIFICATION'
+                    self.drawHeader(False, False, False, False)
+                    pygame.display.update()
+                    time.sleep(2)
+                    self.current_value = 0
+                    self.current_select = self.last_setting
+                    self.needs_enter = False
+                    self.enter_pressed = False
+                    self.disable_esc = False
+                    self.test_state = None
+
+            else:
+                # Now, we can load the test menu for each setting.
+                if self.test_state != None:
+                    self.needs_enter = True
+                    setting = gameDatabaseAccess().loadSetting(self.test_state)
+                    if setting == None:
+                        setting = ValidatedDict(factory_states[self.test_state-1])
+                    # Standard shit, render sub-settings
+                    self.surface.fill((0, 0, 0))
+                    self.header_text = setting.get_str('name')
+                    self.drawHeader(True, True, True, True)
 
             pygame.display.update()
 
