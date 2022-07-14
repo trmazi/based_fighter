@@ -22,13 +22,14 @@ class GameEngine():
         self.screen, self.resolution = self.startGame()
 
         # Current scene/screen state. Here's a list of them.
+        # - INIT
         # - STARTUP
         # - TESTMODE
         # - ATTRACT
         # - GAMEMODE
         # We will init this with None so that the engine can decide what to do.
 
-        self.current_state = None
+        self.current_state = 'INIT'
         self.current_events = None
 
         # Now, we begin the loop
